@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  chatbot-app:
+    # Build the image using the Dockerfile in the current directory
+    build:
+      context: .
+      dockerfile: dockerfile
+    
+    # Give the container a friendly name
+    container_name: TeachBot
+    
+    # Map the container's port 8501 to your host machine's port 8501
+    ports:
+      - "8501:8501"
+      
+      
+    # Use a named volume to ensure the database file persists.
+    # The 'database' folder inside the container (where chatbot.db is created) 
+    # is mapped to a volume managed by Docker.
+    volumes:
+      - app-data:/app/database
+      
+    # Pass your API key from the host machine's environment to the container
+    environment:
+      # CRITICAL: This allows your Groq client to initialize inside the container
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      # Include any other required environment variables (e.g., for MCP/AlphaVantage if not hardcoded)
+
+    # Automatically restart if it fails
+    restart: always
+
+# Define the named volume for data persistence
+volumes:
+  app-data:
+    driver: local
