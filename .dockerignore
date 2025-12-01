@@ -1,0 +1,6 @@
+all-practice-files/
+venv/
+__pycache__/
+.git/
+.gitignore
+.env
