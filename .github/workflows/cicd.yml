@@ -1,0 +1,59 @@
+name: Build and Push Docker Image
+
+# Trigger the workflow on pushes to the 'main' branch
+on:
+  push:
+    branches: [main]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Define environment variables for the workflow
+env:
+  DOCKER_IMAGE_NAME: dhruvabhuva/teachbot # REPLACE with your actual Docker Hub path
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Code
+        # Why: Get the latest code from the repository
+        uses: actions/checkout@v4
+
+      - name: 2. Set up QEMU
+        # Why: Required for building multi-platform Docker images (good practice)
+        uses: docker/setup-qemu-action@v3
+
+      - name: 3. Set up Docker Buildx
+        # Why: Enables advanced Docker build features, including caching
+        uses: docker/setup-buildx-action@v3
+
+      - name: 4. Log in to Docker Hub
+        # Why: Allows the workflow to push the final image to your registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 5. Extract Git Commit Hash for Tagging
+        # Why: Creates a unique, verifiable tag based on the commit SHA (e.g., v1.0.0-f8d2b3c)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=git-
+            type=raw,value=latest
+
+      - name: 6. Build and Push Docker Image
+        # Why: This is the core step where the image is built and uploaded.
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Pass the GROQ_API_KEY as a build argument if needed during install/build
+          build-args: |
+            GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
