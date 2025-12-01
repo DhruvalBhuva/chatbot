@@ -1,7 +1,9 @@
 version: '3.8'
 
 services:
-  chatbot-app:
+  techbot:
+    image: teachbot:latest
+    
     # Build the image using the Dockerfile in the current directory
     build:
       context: .
@@ -25,7 +27,6 @@ services:
     environment:
       # CRITICAL: This allows your Groq client to initialize inside the container
       - GROQ_API_KEY=${GROQ_API_KEY}
-      # Include any other required environment variables (e.g., for MCP/AlphaVantage if not hardcoded)
 
     # Automatically restart if it fails
     restart: always
